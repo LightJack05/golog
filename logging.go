@@ -1,4 +1,4 @@
-package main
+package golog
 
 func writeMessage(level logLevel, message string) {
 	if applicationLogConfig.Configs == nil || applicationLogConfig.Configs.Len() == 0 {

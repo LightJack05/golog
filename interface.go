@@ -1,4 +1,4 @@
-package main
+package golog
 
 func Debug(message string) {
 	writeMessage(LOG_LEVEL_DEBUG, message)
