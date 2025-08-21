@@ -1,40 +1,62 @@
 package main
 
 import "os"
+import "container/list"
+
+type ConfigStreamMap map[logLevel]*os.File
+type ConfigLabelMap map[logLevel]string
+
+type ApplicationLogConfig struct {
+	ApplicationName string
+	Configs         *list.List
+}
 
 type Config struct {
-	ApplicationName string
-	MessageFormat   string
+	MessageFormat string
 
-	StreamMap   map[LOG_LEVEL]*os.File
-	LogLabelMap map[LOG_LEVEL]string
+	StreamMap   map[logLevel]*os.File
+	LogLabelMap map[logLevel]string
 }
 
-func GetDefaultStreamMap() map[LOG_LEVEL]*os.File {
-	return map[LOG_LEVEL]*os.File{
-		LOG_LEVEL_DEBUG:   os.Stderr,
-		LOG_LEVEL_INFO:    os.Stderr,
-		LOG_LEVEL_WARNING: os.Stderr,
-		LOG_LEVEL_ERROR:   os.Stderr,
-		LOG_LEVEL_FATAL:   os.Stderr,
+var applicationLogConfig ApplicationLogConfig
+
+// checkForDoubleSetup Check if the application log configuration has already been set up. If it has, panic to prevent double setup.
+func checkForDoubleSetup() {
+	if applicationLogConfig.Configs != nil && applicationLogConfig.Configs.Len() > 0 {
+		panic("Application log configuration has already been set up. Use AddConfig to add additional configurations.")
 	}
 }
 
-func GetDefaultLogLabelMap() map[LOG_LEVEL]string {
-	return map[LOG_LEVEL]string{
-		LOG_LEVEL_DEBUG:   "DEBUG",
-		LOG_LEVEL_INFO:    "INFO",
-		LOG_LEVEL_WARNING: "WARNING",
-		LOG_LEVEL_ERROR:   "ERROR",
-		LOG_LEVEL_FATAL:   "FATAL",
-	}
+func isLoggingConfigured() bool {
+	return applicationLogConfig.Configs != nil && applicationLogConfig.Configs.Len() > 0
 }
 
-func GetDefaultConfig() Config {
-	return Config{
-		ApplicationName: "",
-		MessageFormat:   "[{{LOG_LEVEL}}] {{MESSAGE}}",
-		StreamMap:       GetDefaultStreamMap(),
-		LogLabelMap:     GetDefaultLogLabelMap(),
+// Setup Setup the application with a single configuration and an application name.
+func Setup(applicationName string, config Config) {
+	checkForDoubleSetup()
+	applicationLogConfig.ApplicationName = applicationName
+	applicationLogConfig.Configs = list.New()
+	applicationLogConfig.Configs.PushBack(config)
+}
+
+// SetupAnonymous Setup the application with a single configuration without an application name.
+func SetupAnonymous(config Config) {
+	checkForDoubleSetup()
+	applicationLogConfig.ApplicationName = ""
+	applicationLogConfig.Configs = list.New()
+	applicationLogConfig.Configs.PushBack(config)
+}
+
+// SetupDefaultConsole Setup the application with the default console configuration.
+func SetupDefaultConsole() {
+	checkForDoubleSetup()
+	SetupAnonymous(GetDefaultConfigConsole())
+}
+
+// AddConfig Add a new configuration to the application log configuration. This allows for multiple configurations to be used, which can be useful for different logging contexts or environments.
+func AddConfig(config Config) {
+	if applicationLogConfig.Configs == nil {
+		applicationLogConfig.Configs = list.New()
 	}
+	applicationLogConfig.Configs.PushBack(config)
 }

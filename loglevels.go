@@ -1,6 +1,6 @@
 package main
 
-type LOG_LEVEL int
+type logLevel int
 
 const (
 	LOG_LEVEL_DEBUG   = 0
