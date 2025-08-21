@@ -26,7 +26,7 @@ var placeholderValueMap = map[logMessagePlaceholder]func(config Config, level lo
 		return applicationLogConfig.ApplicationName
 	},
 	PLACEHOLDER_LOG_LEVEL: func(config Config, level logLevel, message string) string { return config.LogLabelMap[level] },
-	PLACEHOLDER_TIMESTAMP: func(config Config, level logLevel, message string) string { return time.Now().String() },
+	PLACEHOLDER_TIMESTAMP: func(config Config, level logLevel, message string) string { return time.Now().Format(time.RFC3339) },
 	PLACEHOLDER_MESSAGE:   func(config Config, level logLevel, message string) string { return message },
 }
 
